@@ -1,0 +1,17 @@
+---
+
+- name: Save router config
+  hosts: localhost
+  gather_facts: false
+  
+  tasks:
+
+     - name: SSH to device
+       ansible.builtin.shell:
+        cmd: "/usr/bin/python3 /home/test/ansible/test.py '{{hosts | string}}'"
+       register: script_output
+
+     - name: Print script script_output
+       debug:
+         var: script_output.stdout
+        

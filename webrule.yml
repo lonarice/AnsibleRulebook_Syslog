@@ -1,0 +1,18 @@
+- name: Capstone rulebook
+  hosts: localhost
+  gather_facts: false
+
+  sources:
+      - ansible.eda.webhook:
+          host: 127.0.0.1
+          port: 8080
+
+  rules:
+      - name: Launch playbook
+        condition: event.payload.PROGRAM == "%SYS-5-CONFIG_I"
+        action:
+           run_playbook:
+               name: back_config.yml
+               extra_vars:
+                 hosts: "{{event.payload.HOST}}"
+                 

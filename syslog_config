@@ -1,0 +1,27 @@
+#Source
+source s_syslog { syslog(ip(192.168.2.1) port(514) transport("udp")); };
+#JSON Template
+template t_jsonfile {
+    template("$(format-json --scope rfc5424 --scope dot-nv-pairs
+        --rekey .* --shift 1 --scope nv-pairs --key ISODATE)\n\n");
+};
+#Parser
+parser p_cisco { json-parser(); };
+#Webhook destination
+destination d_http {
+    http(url("http://localhost:8080")
+        method("POST")
+        user-agent("syslog-ng User Agent")
+        batch-lines(100)
+        batch-bytes(1024Kb)
+        batch-timeout(10000)
+        headers("Content-Type: application/json")
+        body-suffix("\n")
+        #body('{ "index":{} }
+        body('$(format-json --scope rfc5424 ${MESSAGE})')
+    );
+};
+#Filter
+filter f_syslog { facility(syslog); };
+#Logging destination
+log { source(s_syslog); filter(f_syslog); destination(d_http); };
